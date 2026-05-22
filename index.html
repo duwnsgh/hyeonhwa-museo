@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ECHO CHAMBER · 공명실 — Online Exhibition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600&display=swap" rel="stylesheet">
+<style>
+  /* ============================================
+     DESIGN TOKENS — Spotify-inspired
+     ============================================ */
+  :root {
+    /* Surfaces */
+    --bg-base: #121212;
+    --bg-surface-1: #181818;
+    --bg-surface-2: #1f1f1f;
+    --bg-surface-3: #252525;
+    --bg-elevated: #2a2a2a;
+
+    /* Text */
+    --text-base: #ffffff;
+    --text-secondary: #b3b3b3;
+    --text-tertiary: #7c7c7c;
+    --text-dim: #4d4d4d;
+
+    /* Brand */
+    --green: #1ed760;
+    --green-dim: #1db954;
+    --green-bright: #1fdf64;
+
+    /* Semantic */
+    --negative: #f3727f;
+    --warning: #ffa42b;
+    --info: #539df5;
+
+    /* Shadows */
+    --shadow-card: rgba(0, 0, 0, 0.3) 0px 8px 8px;
+    --shadow-elevated: rgba(0, 0, 0, 0.5) 0px 8px 24px;
+    --shadow-deep: rgba(0, 0, 0, 0.76) 0px 16px 48px;
+
+    /* Layout */
+    --sidebar-w: 240px;
+    --player-h: 90px;
+
+    /* Fonts */
+    --font-ui: 'Figtree', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --font-display: 'Fraunces', 'Times New Roman', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg-base);
+    color: var(--text-base);
+    font-family: var(--font-ui);
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  ::-webkit-scrollbar { width: 12px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #4d4d4d; border-radius: 6px; border: 3px solid var(--bg-base); }
+  ::-webkit-scrollbar-thumb:hover { background: #7c7c7c; }
+
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  a { color: inherit; text-decoration: none; }
+  img { display: block; max-width: 100%; }
+
+  /* ============================================
+     LAYOUT
+     ============================================ */
+  .app {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    grid-template-rows: 1fr var(--player-h);
+    grid-template-areas:
+      "sidebar main"
+      "player player";
+    height: 100vh;
+    gap: 8px;
+    padding: 8px;
+    background: #000;
+  }
+
+  /* ============================================
+     SIDEBAR
+     ============================================ */
+  .sidebar {
+    grid-area: sidebar;
+    background: var(--bg-base);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .logo {
+    padding: 24px 24px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--green);
+    display: grid;
+    place-items: center;
+    color: #000;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.5px;
+  }
+  .logo-text {
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .nav-section {
+    padding: 8px 12px;
+    margin: 0 8px 8px;
+    border-radius: 8px;
+    background: var(--bg-surface-1);
+  }
+  .nav-section.primary { padding: 16px 12px; }
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    font-size: 14px;
+    transition: color .15s ease;
+  }
+  .nav-link.active { color: var(--text-base); }
+  .nav-link:hover { color: var(--text-base); }
+  .nav-link svg { width: 22px; height: 22px; flex-shrink: 0; }
+
+  .library {
+    flex: 1;
+    background: var(--bg-surface-1);
+    margin: 0 8px 8px;
+    border-radius: 8px;
+    padding: 16px 8px;
+    overflow-y: auto;
+  }
+  .library-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px 12px;
+  }
+  .library-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .library-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .15s ease;
+  }
+  .library-item:hover { background: var(--bg-surface-2); }
+  .library-item.active { background: var(--bg-surface-2); }
+  .library-thumb {
+    width: 40px; height: 40px;
+    border-radius: 4px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+    background-color: var(--bg-surface-3);
+  }
+  .library-meta { min-width: 0; flex: 1; }
+  .library-name {
+    font-size: 13px; font-weight: 600;
+    color: var(--text-base);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .library-sub {
+    font-size: 11px; color: var(--text-secondary);
+    margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ============================================
+     MAIN CONTENT
+     ============================================ */
+  .main {
+    grid-area: main;
+    background: var(--bg-base);
+    border-radius: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(18, 18, 18, 0);
+    backdrop-filter: blur(0px);
+    transition: background .2s ease;
+  }
+  .topbar.scrolled {
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(8px);
+  }
+  .topbar-nav { display: flex; gap: 16px; }
+  .icon-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    display: grid; place-items: center;
+    color: var(--text-base);
+  }
+  .icon-btn svg { width: 16px; height: 16px; }
+
+  .topbar-actions { display: flex; gap: 8px; align-items: center; }
+  .pill-outline {
+    padding: 8px 16px;
+    border-radius: 9999px;
+    border: 1px solid var(--text-tertiary);
+    color: var(--text-base);
+    font-size: 14px;
+    font-weight: 700;
+    background: transparent;
+    transition: transform .1s ease, border-color .15s ease;
+  }
+  .pill-outline:hover { transform: scale(1.04); border-color: var(--text-base); }
+  .avatar-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg-surface-2);
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 13px;
+    color: var(--text-base);
+  }
+
+  /* ============================================
+     HERO
+     ============================================ */
+  .hero {
+    position: relative;
+    padding: 16px 32px 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    min-height: 340px;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(18,18,18,1) 95%),
+      radial-gradient(ellipse at 20% 0%, #2d4a3a 0%, #1a2820 50%, #121212 100%);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 3px 3px;
+    pointer-events: none;
+  }
+
+  .hero-cover {
+    width: 232px;
+    height: 232px;
+    border-radius: 4px;
+    background: var(--bg-surface-2);
+    background-size: cover;
+    background-position: center;
+    box-shadow: var(--shadow-deep);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-meta {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  .hero-kicker {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-base);
+    margin-bottom: 8px;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(48px, 7vw, 96px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 8px;
+  }
+  .hero-title em {
+    font-style: italic;
+    font-weight: 600;
+    color: var(--text-base);
+  }
+  .hero-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin: 12px 0 8px;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+  .hero-credits {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .hero-credits .dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+  }
+  .hero-credits .dim { color: var(--text-secondary); font-weight: 400; }
+
+  /* ============================================
+     ACTION BAR
+     ============================================ */
+  .action-bar {
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: linear-gradient(180deg, rgba(18,18,18,0.6) 0%, var(--bg-base) 100%);
+  }
+
+  .play-fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #000;
+    display: grid;
+    place-items: center;
+    box-shadow: var(--shadow-elevated);
+    transition: transform .15s ease, background .15s ease;
+  }
+  .play-fab:hover { transform: scale(1.05); background: var(--green-bright); }
+  .play-fab svg { width: 24px; height: 24px; }
+
+  .action-icon-btn {
+    color: var(--text-secondary);
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    transition: color .15s ease;
+  }
+  .action-icon-btn:hover { color: var(--text-base); }
+  .action-icon-btn svg { width: 28px; height: 28px; }
+
+  /* ============================================
+     TRACK LIST (Gallery)
+     ============================================ */
+  .section { padding: 0 32px 32px; }
+
+  .track-list-header {
+    display: grid;
+    grid-template-columns: 16px 4fr 3fr 2fr 80px;
+    gap: 16px;
+    padding: 0 16px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    align-items: center;
+  }
+  .track-list-header .num { text-align: center; }
+  .track-list-header .dur { text-align: right; padding-right: 16px; }
+
+  .track-list { margin-top: 8px; padding-bottom: 8px; }
+
+  .track {
+    display: grid;
+    grid-template-columns: 16px 4fr 3fr 2fr 80px;
+    gap: 16px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    align-items: center;
+    cursor: pointer;
+    transition: background .12s ease;
+  }
+  .track:hover { background: rgba(255,255,255,0.08); }
+  .track.playing { color: var(--green); }
+  .track.playing .track-title { color: var(--green); }
+
+  .track-num {
+    color: var(--text-secondary);
+    font-size: 14px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    position: relative;
+  }
+  .track:hover .track-num .num-text { display: none; }
+  .track:hover .track-num .num-play { display: grid; }
+  .track-num .num-play {
+    display: none;
+    place-items: center;
+    width: 100%;
+  }
+  .track-num .num-play svg { width: 14px; height: 14px; color: var(--text-base); }
+
+  .track-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+  .track-thumb {
+    width: 40px; height: 40px;
+    border-radius: 2px;
+    background-color: var(--bg-surface-3);
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .track-meta { min-width: 0; }
+  .track-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-base);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-artist {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-album, .track-year {
+    font-size: 14px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .track-dur {
+    text-align: right;
+    padding-right: 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============================================
+     GALLERY GRID (Featured)
+     ============================================ */
+  .grid-section { padding: 32px; padding-top: 16px; }
+  .grid-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+  }
+  .grid-section-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .show-all {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .show-all:hover { text-decoration: underline; color: var(--text-base); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--bg-surface-1);
+    padding: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .2s ease;
+    position: relative;
+  }
+  .card:hover { background: var(--bg-surface-3); }
+
+  .card-cover {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: var(--bg-surface-3);
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 16px;
+    box-shadow: rgba(0,0,0,0.5) 0px 8px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-play {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #000;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .2s ease, transform .2s ease, background .15s ease;
+    box-shadow: rgba(0,0,0,0.4) 0px 8px 16px;
+  }
+  .card-play svg { width: 22px; height: 22px; }
+  .card:hover .card-play {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .card-play:hover { background: var(--green-bright); transform: scale(1.05); }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ============================================
+     ESSAY (Curator's Note)
+     ============================================ */
+  .essay {
+    padding: 32px 32px 80px;
+    max-width: 720px;
+  }
+  .essay-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+  .essay-title {
+    font-family: var(--font-display);
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 24px;
+  }
+  .essay p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 18px;
+  }
+  .essay p strong {
+    color: var(--text-base);
+    font-weight: 600;
+  }
+  .essay-signature {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  .essay-signature .name {
+    color: var(--text-base);
+    font-weight: 700;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 18px;
+  }
+
+  /* ============================================
+     PLAYER BAR
+     ============================================ */
+  .player {
+    grid-area: player;
+    background: #000;
+    display: grid;
+    grid-template-columns: 30% 40% 30%;
+    align-items: center;
+    padding: 0 16px;
+    color: var(--text-base);
+  }
+
+  .player-track {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+  .player-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 4px;
+    background: var(--bg-surface-3);
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+  }
+  .player-meta { min-width: 0; }
+  .player-title {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .player-artist {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .player-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .player-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .control-btn {
+    color: var(--text-secondary);
+    width: 32px; height: 32px;
+    display: grid; place-items: center;
+    transition: color .15s ease, transform .15s ease;
+  }
+  .control-btn:hover { color: var(--text-base); }
+  .control-btn svg { width: 16px; height: 16px; }
+  .control-btn.active { color: var(--green); }
+
+  .play-toggle {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--text-base);
+    color: #000;
+    display: grid;
+    place-items: center;
+    transition: transform .12s ease;
+  }
+  .play-toggle:hover { transform: scale(1.06); }
+  .play-toggle svg { width: 16px; height: 16px; }
+
+  .player-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 600px;
+  }
+  .time {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    min-width: 40px;
+    text-align: center;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #4d4d4d;
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+    overflow: visible;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--text-base);
+    border-radius: 2px;
+    width: 0%;
+    position: relative;
+    transition: background .15s ease;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    width: 12px; height: 12px;
+    background: var(--text-base);
+    border-radius: 50%;
+    transform: translateY(-50%) scale(0);
+    transition: transform .15s ease;
+  }
+  .progress-bar:hover .progress-fill { background: var(--green); }
+  .progress-bar:hover .progress-fill::after { transform: translateY(-50%) scale(1); }
+
+  .player-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+  .volume {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 140px;
+  }
+  .volume-bar {
+    flex: 1;
+    height: 4px;
+    background: #4d4d4d;
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+  }
+  .volume-fill {
+    height: 100%;
+    background: var(--text-base);
+    border-radius: 2px;
+    width: 70%;
+    transition: background .15s ease;
+  }
+  .volume-bar:hover .volume-fill { background: var(--green); }
+
+  /* ============================================
+     LIGHTBOX
+     ============================================ */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 80px;
+    backdrop-filter: blur(20px);
+  }
+  .lightbox.open { display: flex; animation: fadeIn .2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .lightbox-content {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 40px;
+    width: 100%;
+    max-width: 1280px;
+    height: 100%;
+    align-items: center;
+  }
+
+  .lightbox-image-wrap {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .lightbox-image {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 4px;
+    box-shadow: rgba(0,0,0,0.8) 0px 24px 64px;
+  }
+
+  .lightbox-meta {
+    color: var(--text-base);
+  }
+  .lightbox-kicker {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 16px;
+  }
+  .lightbox-title {
+    font-family: var(--font-display);
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 8px;
+  }
+  .lightbox-sub {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .lightbox-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+  }
+  .lightbox-details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 24px;
+    font-size: 13px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 20px;
+  }
+  .lightbox-details dt {
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    font-weight: 700;
+    padding-top: 6px;
+  }
+  .lightbox-details dd {
+    color: var(--text-base);
+    font-weight: 500;
+    padding-top: 4px;
+  }
+
+  .lightbox-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .pill-green {
+    background: var(--green);
+    color: #000;
+    padding: 12px 32px;
+    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    transition: transform .12s ease, background .15s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pill-green:hover { transform: scale(1.04); background: var(--green-bright); }
+  .pill-green svg { width: 16px; height: 16px; }
+
+  .lightbox-close {
+    position: absolute;
+    top: 24px; right: 24px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    color: var(--text-base);
+    display: grid; place-items: center;
+    transition: background .15s ease;
+  }
+  .lightbox-close:hover { background: var(--bg-surface-3); }
+  .lightbox-close svg { width: 18px; height: 18px; }
+
+  .lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    color: var(--text-base);
+    display: grid; place-items: center;
+    transition: background .15s ease, transform .15s ease;
+  }
+  .lightbox-nav:hover { background: var(--bg-surface-3); transform: translateY(-50%) scale(1.05); }
+  .lightbox-nav svg { width: 20px; height: 20px; }
+  .lightbox-nav.prev { left: 16px; }
+  .lightbox-nav.next { right: 16px; }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media (max-width: 900px) {
+    .app {
+      grid-template-columns: 1fr;
+      grid-template-areas: "main" "player";
+    }
+    .sidebar { display: none; }
+    .hero { flex-direction: column; align-items: flex-start; padding-top: 24px; min-height: auto; }
+    .hero-cover { width: 160px; height: 160px; }
+    .hero-title { font-size: clamp(40px, 12vw, 64px); }
+    .track-list-header,
+    .track {
+      grid-template-columns: 16px 1fr 60px;
+    }
+    .track-list-header .album,
+    .track-list-header .year,
+    .track-album,
+    .track-year { display: none; }
+    .player { grid-template-columns: 1fr 80px; padding: 0 12px; }
+    .player-center { grid-column: 1 / -1; }
+    .player-right { display: none; }
+    .player-progress { display: none; }
+    .lightbox { padding: 16px; }
+    .lightbox-content { grid-template-columns: 1fr; overflow-y: auto; }
+    .lightbox-title { font-size: 32px; }
+  }
+
+  /* ============================================
+     UTILITY
+     ============================================ */
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============== SIDEBAR ============== -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">E</div>
+      <div class="logo-text">ECHO · 공명</div>
+    </div>
+
+    <nav class="nav-section primary">
+      <a class="nav-link active" href="#">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 12h3v8h5v-6h4v6h5v-8h3L12 3z"/></svg>
+        Exhibition
+      </a>
+      <a class="nav-link" href="#works">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        Works
+      </a>
+      <a class="nav-link" href="#essay">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Curator's Note
+      </a>
+    </nav>
+
+    <div class="library">
+      <div class="library-header">
+        <span class="library-title">Tracks · 작품</span>
+        <button class="action-icon-btn" aria-label="Add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+      <div id="library-list"></div>
+    </div>
+  </aside>
+
+  <!-- ============== MAIN ============== -->
+  <main class="main" id="main">
+
+    <header class="topbar" id="topbar">
+      <div class="topbar-nav">
+        <button class="icon-btn" aria-label="Back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="icon-btn" aria-label="Forward">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="topbar-actions">
+        <button class="pill-outline">Subscribe</button>
+        <button class="avatar-btn">Y</button>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-cover" id="hero-cover" style="background-image: url('assets/img/a01.jpg')"></div>
+      <div class="hero-meta">
+        <div class="hero-kicker">Online Exhibition · 2026</div>
+        <h1 class="hero-title">Echo<br><em>Chamber</em></h1>
+        <p class="hero-subtitle">잔향(殘響)으로 이루어진 9개의 풍경. 보이지 않는 소리가 시각으로 번지는 공명의 방으로 당신을 초대합니다.</p>
+        <div class="hero-credits">
+          <span>Yuna Park</span>
+          <span class="dot"></span>
+          <span class="dim">9 works</span>
+          <span class="dot"></span>
+          <span class="dim">2026</span>
+          <span class="dot"></span>
+          <span class="dim">36 min listening</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+      <button class="play-fab" id="hero-play" aria-label="Play exhibition">
+        <svg id="hero-play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="action-icon-btn" aria-label="Follow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+      </button>
+      <button class="action-icon-btn" aria-label="More">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </button>
+    </div>
+
+    <!-- TRACK LIST -->
+    <section class="section" id="works">
+      <div class="track-list-header">
+        <span class="num">#</span>
+        <span>Title</span>
+        <span class="album">Medium</span>
+        <span class="year">Year</span>
+        <span class="dur">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;display:inline-block;vertical-align:middle"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </span>
+      </div>
+      <div class="track-list" id="track-list"></div>
+    </section>
+
+    <!-- FEATURED GRID -->
+    <section class="grid-section">
+      <div class="grid-section-head">
+        <h2 class="grid-section-title">In this exhibition</h2>
+        <a class="show-all" href="#">Show all</a>
+      </div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <!-- CURATOR'S ESSAY -->
+    <section class="essay" id="essay">
+      <div class="essay-eyebrow">Curator's Note · 큐레이터 노트</div>
+      <h2 class="essay-title">소리가 사라진 뒤에 남는 것</h2>
+      <p>모든 소리는 부재(不在)를 향한다. <strong>박유나의 9개 작품</strong>은 음향이 머물렀던 공간의 잔여물이며, 진동이 빛으로 굳은 화석이다. 우리는 듣지 못한 것을 본다 — 또는, 보는 행위 안에서 비로소 듣기를 시작한다.</p>
+      <p>이 전시는 시간 위에 놓인 음반의 구조를 빌려, 작품들을 <strong>"트랙"</strong>으로 호명한다. 한 점 한 점이 독립된 곡이면서, 동시에 하나의 앨범이 되는 방식. 좌측의 재생 버튼을 눌러 전시 전체를 처음부터 끝까지 들으시거나, 마음에 머무는 작품 앞에서 멈춰 서기를 권한다.</p>
+      <p>스크린은 더 이상 창문이 아니다. 그것은 <strong>공명실</strong>이다. 디지털 공간에서 미술이 가질 수 있는 새로운 친밀함의 가능성에 대해, 우리는 여전히 묻고 있다.</p>
+      <div class="essay-signature">
+        <div class="name">Soyeon Lim</div>
+        <div style="margin-top:4px">Curator, Echo Chamber 2026</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============== PLAYER ============== -->
+  <footer class="player">
+    <div class="player-track">
+      <div class="player-thumb" id="player-thumb"></div>
+      <div class="player-meta">
+        <div class="player-title" id="player-title">Select a work</div>
+        <div class="player-artist" id="player-artist">Yuna Park · Echo Chamber</div>
+      </div>
+      <button class="control-btn" aria-label="Save">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </button>
+    </div>
+
+    <div class="player-center">
+      <div class="player-controls">
+        <button class="control-btn" aria-label="Shuffle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+        </button>
+        <button class="control-btn" id="prev-btn" aria-label="Previous">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+        </button>
+        <button class="play-toggle" id="play-toggle" aria-label="Play/Pause">
+          <svg id="play-toggle-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="control-btn" id="next-btn" aria-label="Next">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+        </button>
+        <button class="control-btn" id="repeat-btn" aria-label="Repeat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
+        </button>
+      </div>
+      <div class="player-progress">
+        <span class="time" id="current-time">0:00</span>
+        <div class="progress-bar" id="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <span class="time" id="duration">0:00</span>
+      </div>
+    </div>
+
+    <div class="player-right">
+      <button class="control-btn" aria-label="Lyrics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </button>
+      <button class="control-btn" aria-label="Queue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h13M3 12h13M3 18h9M17 16l4 2-4 2v-4z"/></svg>
+      </button>
+      <div class="volume">
+        <button class="control-btn" id="mute-btn" aria-label="Mute">
+          <svg id="vol-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/></svg>
+        </button>
+        <div class="volume-bar" id="volume-bar">
+          <div class="volume-fill" id="volume-fill"></div>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============== LIGHTBOX ============== -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true">
+  <button class="lightbox-close" id="lb-close" aria-label="Close">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <button class="lightbox-nav prev" id="lb-prev" aria-label="Previous work">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <button class="lightbox-nav next" id="lb-next" aria-label="Next work">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+  <div class="lightbox-content">
+    <div class="lightbox-image-wrap">
+      <img class="lightbox-image" id="lb-img" alt="" />
+    </div>
+    <div class="lightbox-meta">
+      <div class="lightbox-kicker" id="lb-kicker">Track 01</div>
+      <h2 class="lightbox-title" id="lb-title"></h2>
+      <div class="lightbox-sub" id="lb-sub"></div>
+      <p class="lightbox-desc" id="lb-desc"></p>
+      <dl class="lightbox-details" id="lb-details"></dl>
+      <div class="lightbox-actions">
+        <button class="pill-green" id="lb-play">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Play
+        </button>
+        <button class="pill-outline">Share</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<audio id="audio" src="assets/music/abc.mp3" preload="metadata"></audio>
+
+<script>
+// ============================================
+// DATA — 9 works
+// ============================================
+const works = [
+  { id: 1, img: 'assets/img/a01.jpg', title: '잔향 I', subtitle: 'Resonance I', medium: 'Pigment on linen', year: '2026', duration: '4:12', desc: '소리가 빠져나간 자리. 첫 번째 트랙은 침묵을 향해 굴절하는 빛의 흔적을 따라간다.' },
+  { id: 2, img: 'assets/img/a02.jpg', title: 'Hollow Room', subtitle: '빈 방', medium: 'Mixed media on panel', year: '2026', duration: '3:48', desc: '방은 비어있을 때 가장 큰 울림을 가진다. 부재가 만들어내는 두께에 대하여.' },
+  { id: 3, img: 'assets/img/a03.jpg', title: '느린 파동', subtitle: 'Slow Wave', medium: 'Oil on canvas', year: '2025', duration: '5:03', desc: '시간이 늘어질 때 진동은 형태가 된다. 가장 느린 음표의 시각화.' },
+  { id: 4, img: 'assets/img/a04.jpg', title: 'Membrane', subtitle: '막(膜)', medium: 'Acrylic and graphite', year: '2026', duration: '2:56', desc: '두 세계 사이의 얇은 경계. 소리가 통과하는 순간에 대한 단상.' },
+  { id: 5, img: 'assets/img/a05.jpg', title: '어둠의 화음', subtitle: 'Chord of Darkness', medium: 'Ink on Hanji', year: '2025', duration: '4:31', desc: '검정 위에 검정. 들리지 않는 화성(和聲)이 종이 위에 내려앉는다.' },
+  { id: 6, img: 'assets/img/a06.jpg', title: 'After Image', subtitle: '잔상(殘像)', medium: 'Photogravure', year: '2026', duration: '3:22', desc: '눈을 감은 뒤에도 남아있는 빛. 청각의 잔상이 시각으로 번지는 풍경.' },
+  { id: 7, img: 'assets/img/a07.jpg', title: '공명실', subtitle: 'Echo Chamber', medium: 'Pigment, gold leaf', year: '2026', duration: '5:47', desc: '전시의 표제작. 모든 트랙이 향하는 중심. 울림 그 자체를 그리려는 시도.' },
+  { id: 8, img: 'assets/img/a08.jpg', title: 'Quiet Stage', subtitle: '고요한 무대', medium: 'Charcoal and pastel', year: '2025', duration: '3:15', desc: '아무도 오르지 않는 무대 위의 정적. 시작되지 않은 공연의 잠재태.' },
+  { id: 9, img: 'assets/img/a09.jpg', title: '잔향 II', subtitle: 'Resonance II — Coda', medium: 'Pigment on linen', year: '2026', duration: '3:46', desc: '첫 번째 잔향으로 돌아가는 마지막 트랙. 시작과 끝이 같은 음을 공유한다.' },
+];
+
+// ============================================
+// STATE
+// ============================================
+let currentIndex = 0;
+let isPlaying = false;
+const audio = document.getElementById('audio');
+
+// ============================================
+// RENDERERS
+// ============================================
+function renderLibrary() {
+  const list = document.getElementById('library-list');
+  list.innerHTML = works.map((w, i) => `
+    <div class="library-item ${i === currentIndex ? 'active' : ''}" data-index="${i}">
+      <div class="library-thumb" style="background-image:url('${w.img}')"></div>
+      <div class="library-meta">
+        <div class="library-name">${w.title}</div>
+        <div class="library-sub">${w.subtitle}</div>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.library-item').forEach(el => {
+    el.addEventListener('click', () => selectTrack(parseInt(el.dataset.index)));
+  });
+}
+
+function renderTrackList() {
+  const list = document.getElementById('track-list');
+  list.innerHTML = works.map((w, i) => `
+    <div class="track ${i === currentIndex && isPlaying ? 'playing' : ''}" data-index="${i}">
+      <div class="track-num">
+        <span class="num-text">${i + 1}</span>
+        <span class="num-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+      </div>
+      <div class="track-main">
+        <div class="track-thumb" style="background-image:url('${w.img}')"></div>
+        <div class="track-meta">
+          <div class="track-title">${w.title}</div>
+          <div class="track-artist">Yuna Park · ${w.subtitle}</div>
+        </div>
+      </div>
+      <div class="track-album">${w.medium}</div>
+      <div class="track-year">${w.year}</div>
+      <div class="track-dur">${w.duration}</div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.track').forEach(el => {
+    el.addEventListener('click', () => {
+      const i = parseInt(el.dataset.index);
+      if (i === currentIndex) togglePlay();
+      else { selectTrack(i); play(); }
+    });
+  });
+}
+
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = works.map((w, i) => `
+    <div class="card" data-index="${i}">
+      <div class="card-cover" style="background-image:url('${w.img}')">
+        <button class="card-play" data-play="${i}" aria-label="Play ${w.title}">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+      </div>
+      <div class="card-title">${w.title}</div>
+      <div class="card-desc">${w.subtitle} · ${w.year} · ${w.medium}</div>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.card').forEach(el => {
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('[data-play]')) return;
+      openLightbox(parseInt(el.dataset.index));
+    });
+  });
+  grid.querySelectorAll('[data-play]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const i = parseInt(btn.dataset.play);
+      if (i === currentIndex) togglePlay();
+      else { selectTrack(i); play(); }
+    });
+  });
+}
+
+// ============================================
+// PLAYER LOGIC
+// ============================================
+function selectTrack(i) {
+  currentIndex = i;
+  const w = works[i];
+  document.getElementById('player-title').textContent = w.title;
+  document.getElementById('player-artist').textContent = `Yuna Park · ${w.subtitle}`;
+  document.getElementById('player-thumb').style.backgroundImage = `url('${w.img}')`;
+  document.getElementById('hero-cover').style.backgroundImage = `url('${w.img}')`;
+  renderLibrary();
+  renderTrackList();
+}
+
+function play() {
+  audio.play().catch(err => {
+    console.warn('Audio play failed:', err);
+  });
+  isPlaying = true;
+  updatePlayIcons();
+  renderTrackList();
+}
+
+function pause() {
+  audio.pause();
+  isPlaying = false;
+  updatePlayIcons();
+  renderTrackList();
+}
+
+function togglePlay() {
+  if (works[currentIndex] && document.getElementById('player-title').textContent === 'Select a work') {
+    selectTrack(0);
+  }
+  if (isPlaying) pause(); else play();
+}
+
+function updatePlayIcons() {
+  const playIcon = '<path d="M8 5v14l11-7z"/>';
+  const pauseIcon = '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>';
+  document.getElementById('play-toggle-icon').innerHTML = isPlaying ? pauseIcon : playIcon;
+  document.getElementById('hero-play-icon').innerHTML = isPlaying ? pauseIcon : playIcon;
+}
+
+function nextTrack() {
+  selectTrack((currentIndex + 1) % works.length);
+  if (isPlaying) play();
+}
+
+function prevTrack() {
+  if (audio.currentTime > 3) {
+    audio.currentTime = 0;
+    return;
+  }
+  selectTrack((currentIndex - 1 + works.length) % works.length);
+  if (isPlaying) play();
+}
+
+// Audio events
+audio.addEventListener('loadedmetadata', () => {
+  document.getElementById('duration').textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener('timeupdate', () => {
+  const pct = (audio.currentTime / audio.duration) * 100 || 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('current-time').textContent = formatTime(audio.currentTime);
+});
+
+audio.addEventListener('ended', () => {
+  nextTrack();
+});
+
+function formatTime(s) {
+  if (!isFinite(s)) return '0:00';
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60).toString().padStart(2, '0');
+  return `${m}:${sec}`;
+}
+
+// Progress bar scrubbing
+document.getElementById('progress-bar').addEventListener('click', (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  if (isFinite(audio.duration)) audio.currentTime = pct * audio.duration;
+});
+
+// Volume
+const volBar = document.getElementById('volume-bar');
+const volFill = document.getElementById('volume-fill');
+let lastVolume = 0.7;
+audio.volume = 0.7;
+
+volBar.addEventListener('click', (e) => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  audio.volume = pct;
+  volFill.style.width = (pct * 100) + '%';
+  if (pct > 0) lastVolume = pct;
+  updateVolIcon();
+});
+
+document.getElementById('mute-btn').addEventListener('click', () => {
+  if (audio.volume > 0) {
+    lastVolume = audio.volume;
+    audio.volume = 0;
+    volFill.style.width = '0%';
+  } else {
+    audio.volume = lastVolume;
+    volFill.style.width = (lastVolume * 100) + '%';
+  }
+  updateVolIcon();
+});
+
+function updateVolIcon() {
+  const ic = document.getElementById('vol-icon');
+  if (audio.volume === 0) {
+    ic.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><line x1="23" y1="9" x2="17" y2="15" stroke="currentColor" stroke-width="2"/><line x1="17" y1="9" x2="23" y2="15" stroke="currentColor" stroke-width="2"/>';
+  } else {
+    ic.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="currentColor"/><path d="M15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"/>';
+  }
+}
+
+// Control buttons
+document.getElementById('play-toggle').addEventListener('click', togglePlay);
+document.getElementById('hero-play').addEventListener('click', togglePlay);
+document.getElementById('next-btn').addEventListener('click', nextTrack);
+document.getElementById('prev-btn').addEventListener('click', prevTrack);
+
+// Repeat toggle
+let repeating = false;
+document.getElementById('repeat-btn').addEventListener('click', (e) => {
+  repeating = !repeating;
+  audio.loop = repeating;
+  e.currentTarget.classList.toggle('active', repeating);
+});
+
+// ============================================
+// LIGHTBOX
+// ============================================
+const lightbox = document.getElementById('lightbox');
+let lightboxIndex = 0;
+
+function openLightbox(i) {
+  lightboxIndex = i;
+  const w = works[i];
+  document.getElementById('lb-img').src = w.img;
+  document.getElementById('lb-kicker').textContent = `Track ${String(i + 1).padStart(2, '0')} · ${w.year}`;
+  document.getElementById('lb-title').textContent = w.title;
+  document.getElementById('lb-sub').textContent = `${w.subtitle} — by Yuna Park`;
+  document.getElementById('lb-desc').textContent = w.desc;
+  document.getElementById('lb-details').innerHTML = `
+    <dt>Medium</dt><dd>${w.medium}</dd>
+    <dt>Year</dt><dd>${w.year}</dd>
+    <dt>Duration</dt><dd>${w.duration}</dd>
+    <dt>Edition</dt><dd>Unique · 1/1</dd>
+  `;
+  lightbox.classList.add('open');
+}
+
+function closeLightbox() {
+  lightbox.classList.remove('open');
+}
+
+document.getElementById('lb-close').addEventListener('click', closeLightbox);
+lightbox.addEventListener('click', (e) => {
+  if (e.target === lightbox) closeLightbox();
+});
+
+document.getElementById('lb-next').addEventListener('click', () => {
+  openLightbox((lightboxIndex + 1) % works.length);
+});
+document.getElementById('lb-prev').addEventListener('click', () => {
+  openLightbox((lightboxIndex - 1 + works.length) % works.length);
+});
+
+document.getElementById('lb-play').addEventListener('click', () => {
+  selectTrack(lightboxIndex);
+  play();
+  closeLightbox();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (!lightbox.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowRight') openLightbox((lightboxIndex + 1) % works.length);
+  if (e.key === 'ArrowLeft') openLightbox((lightboxIndex - 1 + works.length) % works.length);
+});
+
+// ============================================
+// TOPBAR SCROLL
+// ============================================
+document.getElementById('main').addEventListener('scroll', (e) => {
+  document.getElementById('topbar').classList.toggle('scrolled', e.target.scrollTop > 64);
+});
+
+// ============================================
+// INIT
+// ============================================
+renderLibrary();
+renderTrackList();
+renderGrid();
+selectTrack(0);
+</script>
+
+</body>
+</html>
