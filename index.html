@@ -3,22 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>동양화로 그린 친구 소개</title>
+<title>墨夜 — 동양화로 그린 벗</title>
+<meta name="description" content="어둠 속의 전시 — 동양화로 그린 벗들의 밤. 묵향이 흐르는 가로 두루마리 갤러리.">
+<meta name="theme-color" content="#050505">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Serif+KR:wght@200;300;400;500;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
-  /* ───────── 색·기본 ───────── */
+  /* ═════════ 색 · 토큰 ═════════ */
   :root {
-    --paper:        #ebe1c9;
-    --paper-light:  #f3eada;
-    --paper-deep:   #d9cbac;
-    --ink:          #1a1611;
-    --ink-soft:     #4a3f2e;
-    --ink-mute:     #7a6a52;
-    --vermilion:    #b53224;
-    --vermilion-d:  #8a2418;
-    --gold:         #a07e3b;
+    --void:        #050505;   /* 칠흑 바탕 */
+    --void-2:      #0a0a0b;
+    --surface:     #121212;   /* 카드/표면 */
+    --surface-2:   #1a1a1b;
+    --line:        rgba(250,250,250,0.10);
+    --line-strong: rgba(250,250,250,0.18);
+
+    --scarlet:     #ff3b2f;   /* 주홍 글로우 */
+    --scarlet-2:   #ff6a5a;
+    --scarlet-deep:#c42b22;
+
+    --ash:         #fafafa;   /* 본문 글자 */
+    --ash-soft:    #cfc9c0;   /* 살짝 따뜻한 회백 */
+    --ash-mute:    #948d83;   /* 보조 글자 */
+
+    --glow:        0 0 24px rgba(255,59,47,0.55);
+    --glow-soft:   0 0 14px rgba(255,59,47,0.35);
+
+    --ease:        cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* z-index 스케일 */
+    --z-bg: 0; --z-content: 3; --z-chrome: 50; --z-top: 100;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,36 +41,48 @@
   html, body {
     height: 100%;
     overflow: hidden;
-    background: var(--paper);
-    color: var(--ink);
+    background: var(--void);
+    color: var(--ash);
     font-family: 'Noto Serif KR', serif;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  /* 종이 질감 (라이트 + 노이즈) */
-  body::before {
-    content: '';
+  ::selection { background: var(--scarlet); color: var(--void); }
+
+  /* 분위기 ─ 주홍 앰비언트 글로우 + 비네트 */
+  .ambient {
     position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: var(--z-bg);
     background:
-      radial-gradient(ellipse at 20% 10%, rgba(255,250,235,0.5), transparent 55%),
-      radial-gradient(ellipse at 80% 90%, rgba(160,126,59,0.12), transparent 55%),
-      radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.15), transparent 70%);
+      radial-gradient(60% 50% at 14% -4%,  rgba(255,59,47,0.12), transparent 60%),
+      radial-gradient(54% 60% at 88% 104%, rgba(255,59,47,0.10), transparent 62%),
+      radial-gradient(120% 120% at 50% 50%, transparent 55%, rgba(0,0,0,0.65) 120%);
+  }
+  /* 분위기 ─ 미세한 먹 입자(그레인) */
+  .grain {
+    position: fixed; inset: 0;
     pointer-events: none;
     z-index: 1;
-  }
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
     background-image:
-      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='5'/><feColorMatrix values='0 0 0 0 0.12  0 0 0 0 0.09  0 0 0 0 0.06  0 0 0 0.07 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
-    background-size: 240px;
-    opacity: 0.6;
-    mix-blend-mode: multiply;
-    pointer-events: none;
-    z-index: 2;
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-size: 200px;
   }
 
-  /* ───────── 가로 두루마리 ───────── */
+  /* ═════════ 상단 진행 실선(빛의 실) ═════════ */
+  .progress {
+    position: fixed; top: 0; left: 0;
+    height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--scarlet-deep), var(--scarlet), var(--scarlet-2));
+    box-shadow: var(--glow);
+    z-index: var(--z-top);
+    transition: width 0.12s linear;
+  }
+
+  /* ═════════ 가로 두루마리 ═════════ */
   .scroll {
     position: relative;
     width: 100vw; height: 100vh;
@@ -64,7 +91,7 @@
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
     display: flex;
-    z-index: 3;
+    z-index: var(--z-content);
     -webkit-overflow-scrolling: touch;
   }
   .scroll::-webkit-scrollbar { display: none; }
@@ -82,120 +109,146 @@
     padding: 4rem 8rem;
   }
 
-  /* ───────── 표제 (인트로) ───────── */
-  .intro {
-    flex-direction: column;
-    gap: 1.5rem;
-    text-align: center;
-  }
+  /* ═════════ 표제(表題) ─ 인트로 ═════════ */
+  .intro { flex-direction: column; gap: 1.4rem; text-align: center; }
+
   .intro-mark {
     font-family: 'Gowun Batang', serif;
     font-weight: 700;
-    font-size: 2.4rem;
-    color: var(--paper-light);
-    background: var(--vermilion);
-    width: 4.2rem; height: 4.2rem;
+    font-size: 2.3rem;
+    color: var(--ash);
+    background: var(--scarlet);
+    width: 4.4rem; height: 4.4rem;
     display: grid; place-items: center;
-    box-shadow: 0 4px 18px rgba(181,50,36,0.35);
     transform: rotate(-4deg);
-    margin-bottom: 0.5rem;
-    letter-spacing: 0;
+    margin-bottom: 0.4rem;
+    box-shadow: var(--glow), inset 0 0 0 1px rgba(0,0,0,0.25);
+    border-radius: 3px;
   }
   .intro-title {
     font-family: 'Gowun Batang', serif;
     font-weight: 700;
-    font-size: clamp(2.4rem, 6vw, 5.2rem);
-    letter-spacing: 0.18em;
-    line-height: 1.45;
+    font-size: clamp(2.4rem, 6vw, 5rem);
+    letter-spacing: 0.16em;
+    line-height: 1.5;
+    text-shadow: 0 0 40px rgba(0,0,0,0.6);
   }
-  .intro-title .accent { color: var(--vermilion); }
+  .intro-title .accent {
+    color: var(--scarlet);
+    text-shadow: var(--glow-soft);
+  }
   .intro-sub {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    font-size: 1.15rem;
-    color: var(--ink-mute);
-    letter-spacing: 0.32em;
+    font-size: 1.1rem;
+    color: var(--ash-mute);
+    letter-spacing: 0.34em;
     text-transform: uppercase;
   }
   .intro-divider {
-    width: 6rem; height: 1px;
-    background: var(--ink);
-    opacity: 0.35;
-    margin: 1.5rem 0;
+    width: 5.5rem; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--scarlet), transparent);
+    box-shadow: var(--glow-soft);
+    margin: 1.2rem 0;
   }
   .intro-desc {
     max-width: 34rem;
-    line-height: 2.2;
-    color: var(--ink-soft);
-    font-size: 0.98rem;
-    letter-spacing: 0.04em;
+    line-height: 2.25;
+    color: var(--ash-soft);
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 0.03em;
   }
   .intro-meta {
-    margin-top: 2rem;
+    margin-top: 1.8rem;
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    color: var(--ink-mute);
-    letter-spacing: 0.2em;
-    font-size: 0.9rem;
+    color: var(--ash-mute);
+    letter-spacing: 0.18em;
+    font-size: 0.88rem;
   }
 
-  /* ───────── 작품 패널 ───────── */
+  /* ═════════ 작품 패널 ═════════ */
   .work { gap: 5rem; }
 
   .card-wrap {
     flex: 0 0 auto;
     position: relative;
-    perspective: 1200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
+  /* 카드 뒤 주홍 후광(스포트라이트) */
+  .card-wrap::after {
+    content: '';
+    position: absolute; inset: -12% -10%;
+    background: radial-gradient(ellipse at center, rgba(255,59,47,0.16), transparent 68%);
+    opacity: 0;
+    transition: opacity 0.9s var(--ease);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .panel.active .card-wrap::after { opacity: 1; }
+  /* 바닥 그림자 */
   .card-wrap::before {
     content: '';
     position: absolute;
-    left: 50%; bottom: -3rem;
+    left: 50%; bottom: -2.4rem;
     transform: translateX(-50%);
-    width: 70%; height: 2rem;
-    background: radial-gradient(ellipse, rgba(26,22,17,0.25), transparent 70%);
-    filter: blur(8px);
+    width: 64%; height: 1.8rem;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.6), transparent 70%);
+    filter: blur(9px);
     pointer-events: none;
   }
+
   .card {
-    width: min(38vh, 22rem);
-    aspect-ratio: 5 / 7;
-    background: var(--paper-light);
-    box-shadow:
-      0 30px 60px -20px rgba(26,22,17,0.45),
-      0 12px 30px -10px rgba(26,22,17,0.25),
-      0 0 0 1px rgba(26,22,17,0.15),
-      inset 0 0 0 8px var(--paper-light),
-      inset 0 0 0 9px rgba(26,22,17,0.12);
+    height: min(70vh, 38rem);
+    width: -moz-fit-content;
+    width: fit-content;
+    background: var(--surface);
     position: relative;
     overflow: hidden;
-    transform: rotate(-1.2deg);
-    transition: transform 0.9s cubic-bezier(0.16,1,0.3,1);
+    border-radius: 3px;
+    transform: rotate(-1deg);
+    transition: transform 0.9s var(--ease), box-shadow 0.6s var(--ease);
+    box-shadow:
+      0 34px 70px -22px rgba(0,0,0,0.85),
+      0 12px 30px -12px rgba(0,0,0,0.7),
+      0 0 0 1px var(--line),
+      inset 0 0 0 1px rgba(255,255,255,0.04);
   }
-  .card:hover {
-    transform: rotate(0deg) translateY(-4px);
+  .card:hover, .card:focus-visible {
+    transform: rotate(0deg) translateY(-6px);
+    outline: none;
+    box-shadow:
+      0 44px 90px -22px rgba(0,0,0,0.9),
+      0 0 0 1px var(--scarlet),
+      0 0 36px rgba(255,59,47,0.45);
   }
   .card img {
-    width: 100%; height: 100%;
-    object-fit: cover;
+    height: 100%; width: auto;
     display: block;
   }
+  /* 낙관(落款) ─ 주홍 도장 */
   .card .seal {
     position: absolute;
-    bottom: 1.2rem; right: 1.2rem;
-    width: 2.6rem; height: 2.6rem;
-    background: var(--vermilion);
-    color: var(--paper-light);
+    bottom: 0.9rem; right: 0.9rem;
+    width: 2.5rem; height: 2.5rem;
+    background: var(--scarlet);
+    color: var(--ash);
     font-family: 'Gowun Batang', serif;
     font-weight: 700;
     display: grid; place-items: center;
-    font-size: 1.15rem;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-    transform: rotate(2deg);
+    font-size: 1.1rem;
+    border-radius: 3px;
+    transform: rotate(3deg);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.5), var(--glow-soft);
+    border: 1px solid rgba(0,0,0,0.2);
   }
 
+  /* 안내판(placard) */
   .placard {
-    max-width: 24rem;
+    max-width: 23rem;
     position: relative;
     padding-left: 2.8rem;
   }
@@ -204,17 +257,18 @@
     position: absolute;
     left: 0; top: 0.4rem; bottom: 0.4rem;
     width: 1px;
-    background: linear-gradient(to bottom,
-      transparent, var(--ink) 15%, var(--ink) 85%, transparent);
-    opacity: 0.6;
+    background: linear-gradient(to bottom, transparent, var(--scarlet) 18%, var(--scarlet) 82%, transparent);
+    box-shadow: var(--glow-soft);
+    opacity: 0.7;
   }
   .placard-no {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     font-size: 0.95rem;
-    color: var(--vermilion);
+    color: var(--scarlet);
     letter-spacing: 0.4em;
     margin-bottom: 1rem;
+    text-shadow: var(--glow-soft);
   }
   .placard-title {
     font-family: 'Gowun Batang', serif;
@@ -223,251 +277,247 @@
     letter-spacing: 0.06em;
     line-height: 1.35;
     margin-bottom: 0.4rem;
+    color: var(--ash);
   }
   .placard-sub {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     font-size: 1.05rem;
-    color: var(--ink-mute);
+    color: var(--ash-mute);
     letter-spacing: 0.14em;
-    margin-bottom: 2rem;
+    margin-bottom: 1.8rem;
   }
   .placard-rule {
     width: 2.5rem; height: 1px;
-    background: var(--vermilion);
+    background: var(--scarlet);
+    box-shadow: var(--glow-soft);
     margin-bottom: 1.5rem;
   }
   .placard-desc {
     font-size: 0.98rem;
-    line-height: 2.1;
-    color: var(--ink-soft);
+    line-height: 2.15;
+    color: var(--ash-soft);
+    font-weight: 300;
     white-space: pre-line;
     letter-spacing: 0.02em;
   }
 
-  /* ───────── 종결 (아웃트로) ───────── */
-  .outro {
-    flex-direction: column;
-    gap: 2rem;
-    text-align: center;
-  }
+  /* ═════════ 종결(終結) ─ 아웃트로 ═════════ */
+  .outro { flex-direction: column; gap: 1.8rem; text-align: center; }
   .outro-end {
     font-family: 'Gowun Batang', serif;
     font-weight: 700;
-    font-size: 7rem;
-    letter-spacing: 0;
-    color: var(--ink);
+    font-size: 6.5rem;
+    color: var(--ash);
     line-height: 1;
-    border: 2px solid var(--ink);
-    padding: 1.5rem 2.2rem 1.2rem 2.5rem;
+    border: 2px solid var(--scarlet);
+    padding: 1.4rem 2rem 1.1rem;
+    border-radius: 4px;
+    box-shadow: var(--glow), inset 0 0 30px rgba(255,59,47,0.12);
+    text-shadow: 0 0 30px rgba(255,59,47,0.4);
   }
   .outro-text {
-    margin-top: 1.5rem;
-    color: var(--ink-soft);
-    line-height: 2.2;
+    margin-top: 1rem;
+    color: var(--ash-soft);
+    line-height: 2.25;
     max-width: 28rem;
-    letter-spacing: 0.05em;
+    font-weight: 300;
+    letter-spacing: 0.04em;
   }
   .outro-signature {
-    margin-top: 1rem;
+    margin-top: 0.8rem;
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    color: var(--ink-mute);
+    color: var(--ash-mute);
     letter-spacing: 0.3em;
     font-size: 0.9rem;
   }
 
-  /* ───────── 음악 토글 ───────── */
+  /* ═════════ 음악 토글 ═════════ */
   .music-btn {
     position: fixed;
     top: 1.8rem; right: 1.8rem;
     width: 3.2rem; height: 3.2rem;
-    border: 1px solid var(--ink);
-    background: var(--paper-light);
-    color: var(--ink);
+    border: 1px solid var(--line-strong);
+    background: rgba(18,18,18,0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--ash);
     border-radius: 50%;
     cursor: pointer;
-    z-index: 100;
+    z-index: var(--z-top);
     display: grid; place-items: center;
-    transition: all 0.35s ease;
+    transition: background 0.35s var(--ease), color 0.35s var(--ease),
+                border-color 0.35s var(--ease), transform 0.35s var(--ease);
   }
-  .music-btn:hover {
-    background: var(--ink);
-    color: var(--paper-light);
-    transform: rotate(8deg);
-  }
+  .music-btn:hover { transform: rotate(8deg); border-color: var(--scarlet); }
+  .music-btn:focus-visible { outline: 2px solid var(--scarlet); outline-offset: 3px; }
   .music-btn.playing {
-    background: var(--vermilion);
-    color: var(--paper-light);
-    border-color: var(--vermilion);
+    background: var(--scarlet);
+    color: var(--void);
+    border-color: var(--scarlet);
+    box-shadow: var(--glow);
   }
   .music-btn.playing::after {
     content: '';
-    position: absolute;
-    inset: -6px;
-    border: 1px solid var(--vermilion);
+    position: absolute; inset: -6px;
+    border: 1px solid var(--scarlet);
     border-radius: 50%;
     animation: pulse 2.2s ease-out infinite;
   }
   @keyframes pulse {
     0%   { transform: scale(0.95); opacity: 0.9; }
-    100% { transform: scale(1.55); opacity: 0; }
+    100% { transform: scale(1.6);  opacity: 0; }
   }
-  .music-btn svg {
-    width: 1.1rem; height: 1.1rem;
-    fill: currentColor;
-  }
+  .music-btn svg { width: 1.1rem; height: 1.1rem; fill: currentColor; }
   .music-btn .icon-pause { display: none; }
-  .music-btn.playing .icon-play { display: none; }
+  .music-btn.playing .icon-play  { display: none; }
   .music-btn.playing .icon-pause { display: block; }
 
-  /* ───────── 좌우 네비 ───────── */
+  /* ═════════ 좌우 네비 ═════════ */
   .nav {
-    position: fixed;
-    top: 50%;
+    position: fixed; top: 50%;
     transform: translateY(-50%);
-    z-index: 100;
+    z-index: var(--z-top);
     width: 3rem; height: 3rem;
     cursor: pointer;
-    color: var(--ink);
-    background: none;
-    border: none;
+    color: var(--ash);
+    background: none; border: none;
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.8rem;
-    opacity: 0.55;
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    font-size: 1.9rem;
+    opacity: 0.5;
+    transition: opacity 0.3s var(--ease), transform 0.3s var(--ease), text-shadow 0.3s var(--ease);
   }
-  .nav:hover { opacity: 1; transform: translateY(-50%) scale(1.15); }
+  .nav:hover { opacity: 1; transform: translateY(-50%) scale(1.18); color: var(--scarlet); text-shadow: var(--glow-soft); }
+  .nav:focus-visible { opacity: 1; outline: 2px solid var(--scarlet); outline-offset: 4px; border-radius: 4px; }
   .nav.prev { left: 1.5rem; }
   .nav.next { right: 1.5rem; }
 
-  /* ───────── 페이지 표시 ───────── */
+  /* ═════════ 페이지 표시 ═════════ */
   .indicator {
-    position: fixed;
-    bottom: 1.8rem; left: 50%;
+    position: fixed; bottom: 1.8rem; left: 50%;
     transform: translateX(-50%);
-    z-index: 100;
+    z-index: var(--z-top);
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     letter-spacing: 0.35em;
-    color: var(--ink-mute);
+    color: var(--ash-mute);
     font-size: 0.95rem;
     display: flex; align-items: baseline; gap: 0.5rem;
   }
   .indicator .cur {
-    color: var(--vermilion);
+    color: var(--scarlet);
     font-size: 1.25rem;
     font-weight: 500;
     min-width: 1.4rem; text-align: right;
+    text-shadow: var(--glow-soft);
   }
 
-  /* ───────── 스크롤 힌트 ───────── */
+  /* ═════════ 스크롤 힌트 ═════════ */
   .hint {
-    position: absolute;
-    bottom: 4.5rem; left: 50%;
+    position: absolute; bottom: 4.2rem; left: 50%;
     transform: translateX(-50%);
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
     font-size: 0.85rem;
-    letter-spacing: 0.4em;
-    color: var(--ink-mute);
+    letter-spacing: 0.36em;
+    color: var(--ash-mute);
     text-transform: uppercase;
     animation: hint 2.4s ease-in-out infinite;
   }
   @keyframes hint {
-    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.5; }
+    0%, 100% { transform: translateX(-50%) translateY(0);    opacity: 0.45; }
     50%      { transform: translateX(-50%) translateY(-4px); opacity: 1; }
   }
 
-  /* ───────── 등장 애니메이션 ───────── */
-  .panel > * {
+  /* ═════════ 등장 애니메이션 ═════════ */
+  .panel > *:not(.hint) {
     opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1),
-                transform 0.9s cubic-bezier(0.16,1,0.3,1);
+    transform: translateY(22px);
+    transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
   }
-  .panel.active > * {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  .panel.active > *:not(.hint) { opacity: 1; transform: translateY(0); }
   .panel.active > *:nth-child(1) { transition-delay: 0.05s; }
-  .panel.active > *:nth-child(2) { transition-delay: 0.18s; }
-  .panel.active > *:nth-child(3) { transition-delay: 0.30s; }
-  .panel.active > *:nth-child(4) { transition-delay: 0.42s; }
-  .panel.active > *:nth-child(5) { transition-delay: 0.54s; }
-  .panel.active > *:nth-child(6) { transition-delay: 0.66s; }
+  .panel.active > *:nth-child(2) { transition-delay: 0.16s; }
+  .panel.active > *:nth-child(3) { transition-delay: 0.27s; }
+  .panel.active > *:nth-child(4) { transition-delay: 0.38s; }
+  .panel.active > *:nth-child(5) { transition-delay: 0.49s; }
+  .panel.active > *:nth-child(6) { transition-delay: 0.60s; }
 
-  /* ───────── 모바일 ───────── */
+  /* ═════════ 모바일 ═════════ */
   @media (max-width: 820px) {
-    .panel {
-      padding: 3rem 1.5rem;
-      flex-direction: column;
-      gap: 2rem;
-      justify-content: center;
-    }
-    .work { padding-top: 4.5rem; justify-content: flex-start; gap: 2rem; }
-    .card { width: min(62vw, 17rem); }
-    .card-wrap::before { bottom: -2rem; }
-    .placard {
-      max-width: 90vw;
-      padding-left: 0;
-      padding-top: 1.5rem;
-      text-align: center;
-    }
+    .panel { padding: 3rem 1.5rem; flex-direction: column; gap: 2rem; justify-content: center; }
+    .work  { padding-top: 4.5rem; justify-content: center; gap: 1.8rem; }
+    .card  { height: min(52vh, 26rem); }
+    .card-wrap::before { bottom: -1.6rem; }
+    .placard { max-width: 90vw; padding-left: 0; padding-top: 1.4rem; text-align: center; }
     .placard::before {
       left: 50%; top: 0; bottom: auto;
       width: 2.5rem; height: 1px;
       transform: translateX(-50%);
-      background: var(--ink);
-      opacity: 0.5;
+      background: var(--scarlet);
     }
     .placard-rule { margin-left: auto; margin-right: auto; }
-    .placard-title { font-size: 1.55rem; }
+    .placard-title { font-size: 1.5rem; }
     .placard-desc { font-size: 0.92rem; line-height: 1.95; }
-    .intro-title { font-size: clamp(1.8rem, 8vw, 2.4rem); letter-spacing: 0.12em; }
-    .outro-end { font-size: 4.5rem; }
+    .intro-title { font-size: clamp(1.9rem, 8vw, 2.4rem); letter-spacing: 0.1em; }
+    .outro-end { font-size: 4.2rem; }
     .nav { display: none; }
     .music-btn { top: 1rem; right: 1rem; width: 2.7rem; height: 2.7rem; }
-    .indicator { font-size: 0.82rem; bottom: 1.2rem; }
+    .indicator { font-size: 0.82rem; bottom: 1.1rem; }
+    .hint { bottom: 3.2rem; }
+  }
+
+  /* ═════════ 모션 최소화 선호 ═════════ */
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; }
+    .scroll { scroll-behavior: auto !important; }
+    .panel > *:not(.hint) { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .hint, .music-btn.playing::after { animation: none !important; }
+    .card, .card:hover { transition: box-shadow 0.3s ease; }
   }
 </style>
 </head>
 <body>
 
-<div class="scroll" id="scroll">
+<div class="ambient" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<main class="scroll" id="scroll">
 
   <!-- ───────── 표제(表題) ───────── -->
-  <section class="panel intro" data-panel="0">
+  <section class="panel intro" data-panel="0" aria-label="표제">
     <div class="intro-mark">展</div>
     <h1 class="intro-title">
       동양화로 그린<br>
-      <span class="accent"></span>
+      <span class="accent">벗들의 밤</span>
     </h1>
     <p class="intro-sub">Friends in Eastern Strokes</p>
     <div class="intro-divider"></div>
     <p class="intro-desc">
-      1#수정예정<br>
-      2#수정예정  <br>
-      3#수정예정
+      먹이 마르기 전, 벗의 얼굴을 종이에 새긴다.<br>
+      어둠을 등지고 선 그림들 사이를,<br>
+      천천히 옆으로 거닐어 본다.
     </p>
-    <p class="intro-meta">copyrightc 2026 All rights reserved by 현화고등학교</p>
+    <p class="intro-meta">© 2026 현화고등학교 · All rights reserved</p>
     <div class="hint">→ 옆으로 넘겨주세요</div>
   </section>
 
   <!-- 작품 패널은 JS로 삽입됩니다 -->
 
   <!-- ───────── 종결(終結) ───────── -->
-  <section class="panel outro" data-panel="last">
+  <section class="panel outro" data-panel="last" aria-label="맺음">
     <div class="outro-end">終</div>
     <p class="outro-text">
-      1#수정예정<br>
-      2#수정예정<br>
-      3#수정예정
+      불은 꺼지고, 먹 향만 남는다.<br>
+      그림 속의 벗들은 잠들지 않는다.<br>
+      언젠가 다시, 이 자리에서.
     </p>
     <p class="outro-signature">— 墨 香 —</p>
   </section>
 
-</div>
+</main>
 
 <!-- 배경음악 -->
 <audio id="bgm" loop preload="auto">
@@ -475,17 +525,17 @@
 </audio>
 
 <!-- 음악 토글 -->
-<button class="music-btn" id="musicBtn" title="음악 켜기 / 끄기" aria-label="음악 토글">
-  <svg class="icon-play" viewBox="0 0 24 24"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
-  <svg class="icon-pause" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+<button class="music-btn" id="musicBtn" title="음악 켜기 / 끄기" aria-label="배경음악 켜기 또는 끄기" aria-pressed="false">
+  <svg class="icon-play"  viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+  <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
 </button>
 
 <!-- 좌우 화살표 -->
-<button class="nav prev" id="prevBtn" aria-label="이전">←</button>
-<button class="nav next" id="nextBtn" aria-label="다음">→</button>
+<button class="nav prev" id="prevBtn" aria-label="이전 작품">←</button>
+<button class="nav next" id="nextBtn" aria-label="다음 작품">→</button>
 
 <!-- 페이지 인디케이터 -->
-<div class="indicator">
+<div class="indicator" aria-hidden="true">
   <span class="cur" id="curPage">01</span>
   <span>/</span>
   <span class="tot" id="totPage">00</span>
@@ -498,13 +548,15 @@
    - img:      assets/img 폴더의 파일명 (확장자 제외)
    - title:    작품 제목 (친구 별호 / 패의 이름)
    - subtitle: 영문 부제
-   - seal:     낙관에 들어갈 한 글자 (생략 가능)
+   - seal:     낙관에 들어갈 한 글자 (생략 가능 → 한자 숫자 자동)
    - desc:     작품 설명 (\n 으로 줄바꿈)
 
-   ※ 작품을 늘리거나 줄이려면 아래 배열에 항목만 추가/삭제하면 됩니다.
+   ※ 작품을 늘리거나 줄이려면 아래 배열에 항목만 추가/삭제하세요.
+     예) 9번째 친구가 준비되면 assets/img/a09.png 를 넣고
+         아래에 { img:'a09', title:'벗 其九', ... } 한 줄을 추가.
    ════════════════════════════════════════════════════ */
 const IMG_DIR = 'assets/img/';
-const IMG_EXT = 'png';   // png, webp 등으로 바꿀 수 있음
+const IMG_EXT = 'png';   // png, webp 등으로 변경 가능
 
 const ARTWORKS = [
   {
@@ -554,12 +606,6 @@ const ARTWORKS = [
     title: '벗 其八',
     subtitle: 'The Eighth Companion',
     desc: '꿈을 품고 사는 사람.\n달을 가리키는 손가락처럼\n늘 먼 곳을 바라본다.'
-  },
-  {
-    img: 'a09',
-    title: '벗 其九',
-    subtitle: 'The Ninth Companion',
-    desc: '함께 있으면 편안한 벗.\n오래 묵힌 차(茶) 한 잔처럼\n익숙하고 따뜻한 사람.'
   }
 ];
 /* ════════════════════════════════════════════════════
@@ -572,20 +618,21 @@ const HANJA = ['一','二','三','四','五','六','七','八','九','十',
 
 // ─── 패널 생성 ───
 const scroll = document.getElementById('scroll');
-const outro = scroll.querySelector('.outro');
+const outro  = scroll.querySelector('.outro');
 
 ARTWORKS.forEach((w, i) => {
   const panel = document.createElement('section');
   panel.className = 'panel work';
   panel.dataset.panel = String(i + 1);
-  const num = String(i + 1).padStart(2, '0');
+  panel.setAttribute('aria-label', `작품 ${i + 1}: ${w.title}`);
+  const num  = String(i + 1).padStart(2, '0');
   const seal = w.seal || HANJA[i] || (i + 1);
   panel.innerHTML = `
     <div class="card-wrap">
-      <div class="card">
-        <img src="${IMG_DIR}${w.img}.${IMG_EXT}" alt="${w.title}" loading="lazy"
-             onerror="this.style.background='linear-gradient(135deg,#d9cbac,#b8a982)';this.style.objectFit='contain';">
-        <div class="seal">${seal}</div>
+      <div class="card" tabindex="0">
+        <img src="${IMG_DIR}${w.img}.${IMG_EXT}" alt="${w.title} — ${w.subtitle}" loading="lazy"
+             onerror="this.style.minWidth='22rem';this.style.background='linear-gradient(135deg,#1a1a1b,#0a0a0b)';">
+        <div class="seal" aria-hidden="true">${seal}</div>
       </div>
     </div>
     <div class="placard">
@@ -623,6 +670,17 @@ const io = new IntersectionObserver((entries) => {
 allPanels.forEach(p => io.observe(p));
 requestAnimationFrame(() => allPanels[0].classList.add('active'));
 
+// ─── 상단 진행 실선 ───
+const progress = document.getElementById('progress');
+function updateProgress() {
+  const max = scroll.scrollWidth - scroll.clientWidth;
+  const pct = max > 0 ? (scroll.scrollLeft / max) * 100 : 0;
+  progress.style.width = pct + '%';
+}
+scroll.addEventListener('scroll', updateProgress, { passive: true });
+window.addEventListener('resize', updateProgress);
+updateProgress();
+
 // ─── 좌우 네비 ───
 function go(delta) {
   const next = Math.max(0, Math.min(allPanels.length - 1, currentIndex + delta));
@@ -633,8 +691,10 @@ document.getElementById('nextBtn').addEventListener('click', () => go(1));
 
 // 키보드: 화살표 / 스페이스
 window.addEventListener('keydown', (e) => {
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea') return;
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(1); }
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  { e.preventDefault(); go(-1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); go(-1); }
 });
 
 // 마우스 휠 → 가로 스크롤
@@ -650,25 +710,24 @@ const bgm = document.getElementById('bgm');
 const musicBtn = document.getElementById('musicBtn');
 let musicOn = false;
 
+function setMusic(on) {
+  musicOn = on;
+  musicBtn.classList.toggle('playing', on);
+  musicBtn.setAttribute('aria-pressed', String(on));
+  musicBtn.title = on ? '음악 끄기' : '음악 켜기';
+}
+
 musicBtn.addEventListener('click', () => {
   if (musicOn) {
     bgm.pause();
-    musicBtn.classList.remove('playing');
-    musicBtn.title = '음악 켜기';
+    setMusic(false);
   } else {
-    bgm.play().catch(err => console.log('재생 실패:', err));
-    musicBtn.classList.add('playing');
-    musicBtn.title = '음악 끄기';
+    bgm.play().then(() => setMusic(true)).catch(err => console.log('재생 실패:', err));
   }
-  musicOn = !musicOn;
 });
 
-// (loop 끄고 사용할 때) 음악이 자연 종료되면 토글도 OFF
-bgm.addEventListener('ended', () => {
-  musicOn = false;
-  musicBtn.classList.remove('playing');
-  musicBtn.title = '음악 켜기';
-});
+// 음악이 자연 종료되면(loop 해제 시) 토글도 OFF
+bgm.addEventListener('ended', () => setMusic(false));
 </script>
 
 </body>
